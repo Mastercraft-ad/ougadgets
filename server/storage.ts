@@ -6,34 +6,14 @@ import {
   type UpdateAdminProfile,
   type Phone,
   type InsertPhone,
-  type UpdatePhone
+  type UpdatePhone,
+  users,
+  adminUsers,
+  phones
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import defaultPhones from "../client/src/data/phones.json";
-
-// Phone type for storage (with string addedDate for JSON compatibility)
-interface StoragePhone {
-  id: string;
-  name: string;
-  brand: string;
-  ram: number;
-  rom: number;
-  color: string;
-  battery: number;
-  camera: number;
-  frontCamera: number;
-  marketPrice: number;
-  jumiaPrice: number;
-  ouPrice: number;
-  description: string;
-  images: string[];
-  addedDate: Date;
-  condition: string;
-  os?: string | null;
-  sim?: string | null;
-  inspectionVideo?: string | null;
-}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -48,199 +28,107 @@ export interface IStorage {
   updateAdminPassword(id: string, newPassword: string): Promise<boolean>;
   verifyAdminPassword(username: string, password: string): Promise<AdminUser | null>;
   
-  // Phone operations
-  getAllPhones(): Promise<StoragePhone[]>;
-  getPhone(id: string): Promise<StoragePhone | undefined>;
-  createPhone(phone: InsertPhone): Promise<StoragePhone>;
-  updatePhone(id: string, updates: UpdatePhone): Promise<StoragePhone | undefined>;
+  getAllPhones(): Promise<Phone[]>;
+  getPhone(id: string): Promise<Phone | undefined>;
+  createPhone(phone: InsertPhone): Promise<Phone>;
+  updatePhone(id: string, updates: UpdatePhone): Promise<Phone | undefined>;
   deletePhone(id: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private adminUsers: Map<string, AdminUser>;
-  private phones: Map<string, StoragePhone>;
-  private initialized: boolean = false;
-
-  constructor() {
-    this.users = new Map();
-    this.adminUsers = new Map();
-    this.phones = new Map();
-    this.initializeDefaultData();
-  }
-  
-  private initializeDefaultData() {
-    this.initializeDefaultAdmin();
-    this.initializeDefaultPhones();
-  }
-  
-  private initializeDefaultPhones() {
-    for (const phone of defaultPhones) {
-      const storagePhone: StoragePhone = {
-        id: phone.id,
-        name: phone.name,
-        brand: phone.brand,
-        ram: phone.ram,
-        rom: phone.rom,
-        color: phone.color,
-        battery: phone.battery,
-        camera: phone.camera,
-        frontCamera: phone.frontCamera,
-        marketPrice: phone.marketPrice,
-        jumiaPrice: phone.jumiaPrice,
-        ouPrice: phone.ouPrice,
-        description: phone.description,
-        images: phone.images,
-        addedDate: new Date(phone.addedDate),
-        condition: phone.condition,
-        inspectionVideo: phone.inspectionVideo || null,
-      };
-      this.phones.set(phone.id, storagePhone);
-    }
-  }
-
-  private async initializeDefaultAdmin() {
-    if (this.initialized) return;
-    this.initialized = true;
-    
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const defaultAdmin: AdminUser = {
-      id: 'admin-001',
-      username: 'admin',
-      email: 'admin@ougadgets.com',
-      password: hashedPassword,
-      name: 'Admin User',
-      role: 'admin',
-      avatar: 'https://github.com/shadcn.png',
-      phone: '+234 800 000 0000',
-      joinedDate: new Date('2024-01-15'),
-      lastActive: new Date(),
-    };
-    this.adminUsers.set(defaultAdmin.id, defaultAdmin);
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async getAdminUser(id: string): Promise<AdminUser | undefined> {
-    return this.adminUsers.get(id);
+    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
+    return admin || undefined;
   }
 
   async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
-    return Array.from(this.adminUsers.values()).find(
-      (user) => user.username === username,
-    );
+    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
+    return admin || undefined;
   }
 
   async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
-    return Array.from(this.adminUsers.values()).find(
-      (user) => user.email === email,
-    );
+    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
+    return admin || undefined;
   }
 
   async createAdminUser(insertUser: InsertAdminUser): Promise<AdminUser> {
-    const id = randomUUID();
     const hashedPassword = await bcrypt.hash(insertUser.password, 10);
-    const adminUser: AdminUser = { 
-      id,
-      username: insertUser.username,
-      email: insertUser.email,
+    const [admin] = await db.insert(adminUsers).values({
+      ...insertUser,
       password: hashedPassword,
-      name: insertUser.name,
-      role: insertUser.role || 'staff',
-      avatar: insertUser.avatar || null,
-      phone: insertUser.phone || null,
-      joinedDate: new Date(),
-      lastActive: new Date(),
-    };
-    this.adminUsers.set(id, adminUser);
-    return adminUser;
+    }).returning();
+    return admin;
   }
 
   async updateAdminUser(id: string, updates: UpdateAdminProfile): Promise<AdminUser | undefined> {
-    const adminUser = this.adminUsers.get(id);
-    if (!adminUser) return undefined;
-    
-    const updatedUser: AdminUser = {
-      ...adminUser,
-      ...updates,
-      lastActive: new Date(),
-    };
-    this.adminUsers.set(id, updatedUser);
-    return updatedUser;
+    const [admin] = await db
+      .update(adminUsers)
+      .set({ ...updates, lastActive: new Date() })
+      .where(eq(adminUsers.id, id))
+      .returning();
+    return admin || undefined;
   }
 
   async updateAdminPassword(id: string, newPassword: string): Promise<boolean> {
-    const adminUser = this.adminUsers.get(id);
-    if (!adminUser) return false;
-    
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    adminUser.password = hashedPassword;
-    adminUser.lastActive = new Date();
-    this.adminUsers.set(id, adminUser);
-    return true;
+    const result = await db
+      .update(adminUsers)
+      .set({ password: hashedPassword, lastActive: new Date() })
+      .where(eq(adminUsers.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   async verifyAdminPassword(username: string, password: string): Promise<AdminUser | null> {
-    const adminUser = await this.getAdminUserByUsername(username);
-    if (!adminUser) return null;
+    const admin = await this.getAdminUserByUsername(username);
+    if (!admin) return null;
     
-    const isValid = await bcrypt.compare(password, adminUser.password);
-    return isValid ? adminUser : null;
+    const isValid = await bcrypt.compare(password, admin.password);
+    return isValid ? admin : null;
   }
-  
-  // Phone CRUD operations
-  async getAllPhones(): Promise<StoragePhone[]> {
-    return Array.from(this.phones.values());
+
+  async getAllPhones(): Promise<Phone[]> {
+    return db.select().from(phones);
   }
-  
-  async getPhone(id: string): Promise<StoragePhone | undefined> {
-    return this.phones.get(id);
+
+  async getPhone(id: string): Promise<Phone | undefined> {
+    const [phone] = await db.select().from(phones).where(eq(phones.id, id));
+    return phone || undefined;
   }
-  
-  async createPhone(insertPhone: InsertPhone): Promise<StoragePhone> {
-    const id = randomUUID();
-    const phone: StoragePhone = {
-      ...insertPhone,
-      id,
-      addedDate: new Date(),
-      os: insertPhone.os || null,
-      sim: insertPhone.sim || null,
-      inspectionVideo: insertPhone.inspectionVideo || null,
-    };
-    this.phones.set(id, phone);
+
+  async createPhone(insertPhone: InsertPhone): Promise<Phone> {
+    const [phone] = await db.insert(phones).values(insertPhone).returning();
     return phone;
   }
-  
-  async updatePhone(id: string, updates: UpdatePhone): Promise<StoragePhone | undefined> {
-    const phone = this.phones.get(id);
-    if (!phone) return undefined;
-    
-    const updatedPhone: StoragePhone = {
-      ...phone,
-      ...updates,
-    };
-    this.phones.set(id, updatedPhone);
-    return updatedPhone;
+
+  async updatePhone(id: string, updates: UpdatePhone): Promise<Phone | undefined> {
+    const [phone] = await db
+      .update(phones)
+      .set(updates)
+      .where(eq(phones.id, id))
+      .returning();
+    return phone || undefined;
   }
-  
+
   async deletePhone(id: string): Promise<boolean> {
-    return this.phones.delete(id);
+    const result = await db.delete(phones).where(eq(phones.id, id)).returning();
+    return result.length > 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
