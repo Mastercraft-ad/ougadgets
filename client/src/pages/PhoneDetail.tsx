@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ArrowLeft, MessageCircle, Phone as PhoneIcon, Check, ShieldCheck } from "lucide-react";
+import { ArrowLeft, MessageCircle, Phone as PhoneIcon, Check, ShieldCheck, Play, X } from "lucide-react";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export default function PhoneDetail() {
   const [, params] = useRoute("/phone/:id");
   const phones = useStore((state) => state.phones);
   const phone = phones.find((p) => p.id === params?.id);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   if (!phone) {
     return (
@@ -44,29 +47,70 @@ export default function PhoneDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
         {/* Gallery */}
         <div className="space-y-4">
-          <div className="aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden border border-border shadow-sm">
+          <div className="aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden border border-border shadow-sm relative group">
             <img 
               src={phone.images[selectedImage]} 
               alt={phone.name} 
               className="w-full h-full object-cover"
             />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors pointer-events-none" />
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
             {phone.images.map((img, idx) => (
               <button 
                 key={idx}
                 onClick={() => setSelectedImage(idx)}
-                className={`relative w-24 h-24 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
-                  selectedImage === idx ? "border-primary ring-2 ring-primary/20" : "border-transparent opacity-70 hover:opacity-100"
+                className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                  selectedImage === idx ? "border-primary ring-2 ring-primary/20 scale-105" : "border-transparent opacity-70 hover:opacity-100 hover:scale-105"
                 }`}
               >
                 <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
               </button>
             ))}
-            {/* Placeholder for inspection video */}
-            <div className="w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300 text-xs text-center p-1 text-muted-foreground">
-               Inspection Video
-            </div>
+            
+            {/* Inspection Video Button */}
+            <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+              <DialogTrigger asChild>
+                <button 
+                  className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 text-xs text-center p-1 text-muted-foreground hover:bg-slate-200 hover:border-primary/50 hover:text-primary transition-all flex-shrink-0 group"
+                >
+                   <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                     <Play size={12} className="fill-current ml-0.5" />
+                   </div>
+                   <span className="font-medium text-[10px] leading-tight">Inspection<br/>Video</span>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[800px] p-0 bg-black border-none overflow-hidden text-white">
+                <VisuallyHidden>
+                  <DialogTitle>Device Inspection Video</DialogTitle>
+                </VisuallyHidden>
+                <div className="relative aspect-video bg-black flex items-center justify-center group">
+                  {/* Mock Video Player UI */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center cursor-pointer hover:bg-white/30 transition-all hover:scale-110">
+                       <Play size={32} className="fill-white text-white ml-1" />
+                    </div>
+                  </div>
+                  
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="h-1 bg-white/30 rounded-full mb-4 overflow-hidden">
+                      <div className="h-full w-1/3 bg-primary rounded-full" />
+                    </div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span>0:00 / 1:45</span>
+                      <span>Device Inspection - {phone.name}</span>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => setIsVideoOpen(false)}
+                    className="absolute top-4 right-4 p-2 bg-black/50 rounded-full hover:bg-black/70 text-white transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
