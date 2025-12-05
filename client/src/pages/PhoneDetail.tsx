@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { 
   ArrowLeft, 
   MessageCircle, 
@@ -19,12 +20,15 @@ import {
   Camera, 
   HardDrive,
   ChevronRight,
-  Home
+  Home,
+  Loader2,
+  Upload
 } from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { PhoneCard } from "@/components/PhoneCard";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PhoneDetail() {
   const [, params] = useRoute("/phone/:id");
@@ -32,6 +36,12 @@ export default function PhoneDetail() {
   const phone = phones.find((p) => p.id === params?.id);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  
+  // Payment Modal States
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentStep, setPaymentStep] = useState<'info' | 'upload' | 'success'>('info');
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
 
   if (!phone) {
     return (
@@ -53,6 +63,24 @@ export default function PhoneDetail() {
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(val);
+  };
+
+  const handlePaymentUpload = () => {
+    setIsUploading(true);
+    // Simulate upload delay
+    setTimeout(() => {
+      setIsUploading(false);
+      setPaymentStep('success');
+      
+      // Redirect to WhatsApp after short delay
+      setTimeout(() => {
+        const message = `Hi, I have just made a payment for the ${phone.name} (${formatCurrency(phone.ouPrice)}). Here is my payment evidence.`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        setIsPaymentOpen(false);
+        setPaymentStep('info'); // Reset for next time
+      }, 2000);
+    }, 1500);
   };
 
   return (
@@ -218,11 +246,85 @@ export default function PhoneDetail() {
                   </div>
 
                   <div className="space-y-3">
-                     <Button size="lg" className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all hover:-translate-y-0.5" asChild>
-                        <a href={`https://wa.me/?text=Hi, I am interested in the ${phone.name} listed for ${formatCurrency(phone.ouPrice)}`} target="_blank" rel="noreferrer">
-                           <MessageCircle className="mr-2 h-5 w-5" /> Buy via WhatsApp
-                        </a>
-                     </Button>
+                     <Dialog open={isPaymentOpen} onOpenChange={(open) => {
+                        setIsPaymentOpen(open);
+                        if (!open) setPaymentStep('info'); // Reset when closed
+                     }}>
+                        <DialogTrigger asChild>
+                           <Button size="lg" className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20 transition-all hover:-translate-y-0.5">
+                              <MessageCircle className="mr-2 h-5 w-5" /> Buy Now
+                           </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                           <DialogHeader>
+                              <DialogTitle className="text-center text-xl font-bold">
+                                 {paymentStep === 'info' && "Bank Transfer Details"}
+                                 {paymentStep === 'upload' && "Upload Payment Evidence"}
+                                 {paymentStep === 'success' && "Payment Submitted!"}
+                              </DialogTitle>
+                              <DialogDescription className="text-center">
+                                 {paymentStep === 'info' && "Please make a transfer to the account below"}
+                                 {paymentStep === 'upload' && "Please attach a screenshot of your transaction"}
+                                 {paymentStep === 'success' && "Redirecting to WhatsApp..."}
+                              </DialogDescription>
+                           </DialogHeader>
+
+                           {paymentStep === 'info' && (
+                              <div className="space-y-6 py-4">
+                                 <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-primary/30 text-center space-y-2">
+                                    <p className="text-sm text-muted-foreground">Account Number</p>
+                                    <p className="text-3xl font-mono font-bold text-primary tracking-wider select-all">0192930383</p>
+                                    <div className="pt-2 space-y-1">
+                                       <p className="font-bold">O&U Gadgets</p>
+                                       <p className="text-sm text-muted-foreground">GTBank</p>
+                                    </div>
+                                 </div>
+                                 <div className="text-center text-sm text-muted-foreground">
+                                    Amount to Pay: <span className="font-bold text-foreground">{formatCurrency(phone.ouPrice)}</span>
+                                 </div>
+                                 <Button className="w-full h-12 font-bold text-lg" onClick={() => setPaymentStep('upload')}>
+                                    I Have Paid
+                                 </Button>
+                              </div>
+                           )}
+
+                           {paymentStep === 'upload' && (
+                              <div className="space-y-6 py-4">
+                                 <div 
+                                    className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group"
+                                    onClick={handlePaymentUpload}
+                                 >
+                                    {isUploading ? (
+                                       <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                                    ) : (
+                                       <>
+                                          <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                             <Upload className="h-6 w-6 text-primary" />
+                                          </div>
+                                          <p className="font-medium text-sm">Click to upload receipt</p>
+                                          <p className="text-xs text-muted-foreground mt-1">JPG, PNG or PDF</p>
+                                       </>
+                                    )}
+                                 </div>
+                                 <Button variant="ghost" onClick={() => setPaymentStep('info')} disabled={isUploading}>
+                                    Back to Account Info
+                                 </Button>
+                              </div>
+                           )}
+
+                           {paymentStep === 'success' && (
+                              <div className="py-8 flex flex-col items-center justify-center space-y-4 animate-in fade-in zoom-in duration-300">
+                                 <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                    <Check size={32} strokeWidth={3} />
+                                 </div>
+                                 <p className="text-center text-muted-foreground max-w-xs">
+                                    Your proof of payment has been received. We are opening WhatsApp to finalize your order.
+                                 </p>
+                              </div>
+                           )}
+                        </DialogContent>
+                     </Dialog>
+
                      <Button size="lg" variant="outline" className="w-full h-14 text-lg font-bold border-2 hover:bg-slate-50" asChild>
                         <a href="tel:+1234567890">
                            <PhoneIcon className="mr-2 h-5 w-5" /> Call to Order
@@ -302,8 +404,8 @@ export default function PhoneDetail() {
                 ['Battery Capacity', `${phone.battery} mAh`],
                 ['Main Camera', `${phone.camera} MP`],
                 ['Selfie Camera', `${phone.frontCamera} MP`],
-                ['Operating System', phone.brand === 'Apple' ? 'iOS' : 'Android'],
-                ['SIM Support', 'Dual SIM (Nano-SIM)'],
+                ['Operating System', phone.os || (phone.brand === 'Apple' ? 'iOS' : 'Android')],
+                ['SIM Support', phone.sim || 'Dual SIM (Nano-SIM)'],
                 ['Verified Status', 'Passed 30-point Inspection'],
               ].map(([label, value], i) => (
                 <TableRow key={i} className="hover:bg-slate-50/50 border-b last:border-0">

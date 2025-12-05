@@ -19,6 +19,8 @@ export interface Phone {
   images: string[];
   addedDate: string;
   condition: string;
+  os?: string;
+  sim?: string;
 }
 
 interface StoreState {

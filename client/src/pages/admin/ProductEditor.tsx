@@ -44,6 +44,8 @@ const phoneSchema = z.object({
   condition: z.string().min(1, "Condition is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   images: z.string().min(5, "At least one image is required"), 
+  os: z.string().optional(),
+  sim: z.string().optional(),
 });
 
 export default function ProductEditor() {
@@ -75,6 +77,8 @@ export default function ProductEditor() {
       condition: "New",
       description: "",
       images: "",
+      os: "Android",
+      sim: "Dual SIM (Nano-SIM)",
     },
   });
 
@@ -319,6 +323,35 @@ export default function ProductEditor() {
                         </FormItem>
                       )} />
                    </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <FormField control={form.control} name="os" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Operating System</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select OS" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Android">Android</SelectItem>
+                            <SelectItem value="iOS">iOS</SelectItem>
+                            <SelectItem value="HarmonyOS">HarmonyOS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="sim" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>SIM Support</FormLabel>
+                        <FormControl><Input placeholder="e.g. Dual SIM" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                 </div>
                 </CardContent>
               </Card>
             </div>
