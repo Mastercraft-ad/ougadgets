@@ -8,16 +8,16 @@ async function seed() {
   const existingAdmin = await db.select().from(adminUsers).limit(1);
   if (existingAdmin.length === 0) {
     console.log("Creating admin user...");
-    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const hashedPassword = await bcrypt.hash("admin@ougadgets.com", 10);
     await db.insert(adminUsers).values({
-      username: "admin",
+      username: "oanduadmin",
       email: "admin@ougadgets.com",
       password: hashedPassword,
       name: "Admin User",
       role: "admin",
       phone: "+234 800 000 0000",
     });
-    console.log("Admin user created (username: admin, password: admin123)");
+    console.log("Admin user created (username: oanduadmin, password: admin@ougadgets.com)");
   } else {
     console.log("Admin user already exists, skipping...");
   }
@@ -38,10 +38,11 @@ async function seed() {
         marketPrice: 180000,
         jumiaPrice: 175000,
         ouPrice: 150000,
-        description: "Reliable midrange phone with strong battery life and good camera.",
+        description:
+          "Reliable midrange phone with strong battery life and good camera.",
         images: [
           "https://images.unsplash.com/photo-1610945415295-d96bf067153c?auto=format&fit=crop&q=80&w=800",
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "New",
         os: "Android 13",
@@ -60,9 +61,10 @@ async function seed() {
         marketPrice: 220000,
         jumiaPrice: 215000,
         ouPrice: 190000,
-        description: "High-capacity battery and flagship-level camera at an affordable price.",
+        description:
+          "High-capacity battery and flagship-level camera at an affordable price.",
         images: [
-          "https://images.unsplash.com/photo-1598327105666-5b89351aff23?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1598327105666-5b89351aff23?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "New",
         os: "MIUI 14",
@@ -82,7 +84,7 @@ async function seed() {
         ouPrice: 120000,
         description: "Clean Android experience for budget-conscious buyers.",
         images: [
-          "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "Used - Good",
         os: "Android 14",
@@ -101,9 +103,10 @@ async function seed() {
         marketPrice: 450000,
         jumiaPrice: 440000,
         ouPrice: 410000,
-        description: "Pro camera system, super retina XDR display, and A15 Bionic chip.",
+        description:
+          "Pro camera system, super retina XDR display, and A15 Bionic chip.",
         images: [
-          "https://images.unsplash.com/photo-1632661674596-df8be070a5c5?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1632661674596-df8be070a5c5?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "New",
         os: "iOS 17",
@@ -122,9 +125,10 @@ async function seed() {
         marketPrice: 200000,
         jumiaPrice: 195000,
         ouPrice: 175000,
-        description: "Everything you could ask for. Fast charging and smooth performance.",
+        description:
+          "Everything you could ask for. Fast charging and smooth performance.",
         images: [
-          "https://images.unsplash.com/photo-1626218174358-77b7f9a4cd00?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1626218174358-77b7f9a4cd00?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "Used - Like New",
         os: "OxygenOS 13",
@@ -144,7 +148,7 @@ async function seed() {
         ouPrice: 82000,
         description: "Level up! 50MP AI quad camera and 90Hz FHD+ display.",
         images: [
-          "https://images.unsplash.com/photo-1609252926632-c7b415f69728?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1609252926632-c7b415f69728?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "New",
         os: "MIUI 13",
@@ -163,9 +167,10 @@ async function seed() {
         marketPrice: 320000,
         jumiaPrice: 315000,
         ouPrice: 290000,
-        description: "Nightography camera, storage to save all your night shots.",
+        description:
+          "Nightography camera, storage to save all your night shots.",
         images: [
-          "https://images.unsplash.com/photo-1610945265064-f4521994a29f?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1610945265064-f4521994a29f?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "Used - Excellent",
         os: "Android 14",
@@ -183,9 +188,10 @@ async function seed() {
         marketPrice: 120000,
         jumiaPrice: 115000,
         ouPrice: 105000,
-        description: "Glow up your selfie game with 32MP glowing selfie camera.",
+        description:
+          "Glow up your selfie game with 32MP glowing selfie camera.",
         images: [
-          "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&q=80&w=800"
+          "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&q=80&w=800",
         ],
         condition: "New",
         os: "HiOS 12",
