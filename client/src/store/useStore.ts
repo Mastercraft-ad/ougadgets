@@ -30,7 +30,7 @@ interface StoreState {
   
   // Auth (Mock)
   isAuthenticated: boolean;
-  login: (password: string) => boolean;
+  login: (username: string, email: string) => boolean;
   logout: () => void;
 
   // Actions
@@ -52,9 +52,9 @@ export const useStore = create<StoreState>()(
       compareList: [],
       isAuthenticated: false,
 
-      login: (password) => {
-        // Mock password check
-        if (password === 'admin123') {
+      login: (username, email) => {
+        // Mock credential check
+        if (username === 'admin' && email === 'admin@ougadgets.com') {
           set({ isAuthenticated: true });
           return true;
         }
