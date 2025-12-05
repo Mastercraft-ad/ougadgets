@@ -93,9 +93,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       </a>
                     </Link>
                   ))}
-                  <Link href="/admin">
-                     <a onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-muted-foreground mt-4">Admin Access</a>
-                  </Link>
                 </div>
               </SheetContent>
             </Sheet>
