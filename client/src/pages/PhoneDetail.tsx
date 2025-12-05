@@ -302,6 +302,8 @@ export default function PhoneDetail() {
                 ['Battery Capacity', `${phone.battery} mAh`],
                 ['Main Camera', `${phone.camera} MP`],
                 ['Selfie Camera', `${phone.frontCamera} MP`],
+                ['Operating System', phone.brand === 'Apple' ? 'iOS' : 'Android'],
+                ['SIM Support', 'Dual SIM (Nano-SIM)'],
                 ['Verified Status', 'Passed 30-point Inspection'],
               ].map(([label, value], i) => (
                 <TableRow key={i} className="hover:bg-slate-50/50 border-b last:border-0">
