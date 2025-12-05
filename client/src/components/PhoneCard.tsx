@@ -107,16 +107,11 @@ export function PhoneCard({ phone }: PhoneCardProps) {
            </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 w-full">
-           <Button variant="outline" className="w-full border-green-600/20 text-green-700 hover:bg-green-50 hover:text-green-800" asChild>
-             <a href={`https://wa.me/?text=Hi, I am interested in ${phone.name} listed for ${formatCurrency(phone.ouPrice)}`} target="_blank" rel="noreferrer">
-               <MessageCircle className="mr-2 h-4 w-4" /> Chat
-             </a>
-           </Button>
+        <div className="w-full">
            <Button className="w-full bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all" asChild>
-             <a href="tel:+1234567890">
-               <PhoneIcon className="mr-2 h-4 w-4" /> Call
-             </a>
+             <Link href={`/phone/${phone.id}`}>
+               View Details
+             </Link>
            </Button>
         </div>
       </CardFooter>

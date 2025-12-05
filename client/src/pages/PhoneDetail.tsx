@@ -324,12 +324,6 @@ export default function PhoneDetail() {
                            )}
                         </DialogContent>
                      </Dialog>
-
-                     <Button size="lg" variant="outline" className="w-full h-14 text-lg font-bold border-2 hover:bg-slate-50" asChild>
-                        <a href="tel:+1234567890">
-                           <PhoneIcon className="mr-2 h-5 w-5" /> Call to Order
-                        </a>
-                     </Button>
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-dashed flex items-center justify-center gap-2 text-xs text-muted-foreground">
