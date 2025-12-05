@@ -21,6 +21,7 @@ export interface Phone {
   condition: string;
   os?: string;
   sim?: string;
+  inspectionVideo?: string;
 }
 
 interface StoreState {

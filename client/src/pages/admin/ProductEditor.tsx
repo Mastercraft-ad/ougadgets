@@ -26,7 +26,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState, useRef } from "react";
-import { ArrowLeft, Save, Image as ImageIcon, Smartphone, DollarSign, Layers, Upload } from "lucide-react";
+import { ArrowLeft, Save, Image as ImageIcon, Smartphone, DollarSign, Layers, Upload, Youtube } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const phoneSchema = z.object({
@@ -46,6 +46,7 @@ const phoneSchema = z.object({
   images: z.string().min(5, "At least one image is required"), 
   os: z.string().optional(),
   sim: z.string().optional(),
+  inspectionVideo: z.string().optional(),
 });
 
 export default function ProductEditor() {
@@ -79,6 +80,7 @@ export default function ProductEditor() {
       images: "",
       os: "Android",
       sim: "Dual SIM (Nano-SIM)",
+      inspectionVideo: "",
     },
   });
 
@@ -451,6 +453,28 @@ export default function ProductEditor() {
                       </FormControl>
                       <FormDescription className="text-xs">
                         Or paste URLs manually (pipe separated).
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <Separator className="my-4" />
+
+                  <FormField control={form.control} name="inspectionVideo" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Youtube className="h-4 w-4 text-red-500" />
+                        Inspection Video
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://www.youtube.com/watch?v=..." 
+                          className="font-mono text-xs"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        YouTube video URL for device inspection.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

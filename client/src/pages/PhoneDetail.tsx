@@ -30,6 +30,13 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { PhoneCard } from "@/components/PhoneCard";
 import { useToast } from "@/hooks/use-toast";
 
+// Helper function to extract YouTube video ID from URL
+function getYouTubeVideoId(url: string): string {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : '';
+}
+
 export default function PhoneDetail() {
   const [, params] = useRoute("/phone/:id");
   const phones = useStore((state) => state.phones);
@@ -125,49 +132,42 @@ export default function PhoneDetail() {
               </button>
             ))}
             
-            {/* Inspection Video Button */}
-            <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
-              <DialogTrigger asChild>
-                <button 
-                  className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-100 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 text-xs text-center p-1 text-muted-foreground hover:bg-slate-200 hover:border-primary/50 hover:text-primary transition-all flex-shrink-0 group"
-                >
-                   <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                     <Play size={12} className="fill-current ml-0.5 text-primary" />
-                   </div>
-                   <span className="font-bold text-[10px] leading-tight uppercase tracking-wide">Inspection<br/>Video</span>
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[800px] p-0 bg-black border-none overflow-hidden text-white">
-                <VisuallyHidden>
-                  <DialogTitle>Device Inspection Video</DialogTitle>
-                </VisuallyHidden>
-                <div className="relative aspect-video bg-black flex items-center justify-center group">
-                  {/* Mock Video Player UI */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center cursor-pointer hover:bg-white/30 transition-all hover:scale-110 group/play">
-                       <Play size={40} className="fill-white text-white ml-2 group-hover/play:scale-110 transition-transform" />
-                    </div>
-                  </div>
-                  
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="h-1.5 bg-white/30 rounded-full mb-4 overflow-hidden cursor-pointer">
-                      <div className="h-full w-1/3 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                    </div>
-                    <div className="flex justify-between text-sm font-medium">
-                      <span>0:00 / 1:45</span>
-                      <span>Device Inspection - {phone.name}</span>
-                    </div>
-                  </div>
-                  
+            {/* Inspection Video Button - Only show if video URL exists */}
+            {phone.inspectionVideo && (
+              <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+                <DialogTrigger asChild>
                   <button 
-                    onClick={() => setIsVideoOpen(false)}
-                    className="absolute top-4 right-4 p-2 bg-black/50 rounded-full hover:bg-black/70 text-white transition-colors hover:rotate-90 duration-300"
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-red-50 flex flex-col items-center justify-center border-2 border-dashed border-red-200 text-xs text-center p-1 text-red-600 hover:bg-red-100 hover:border-red-400 transition-all flex-shrink-0 group"
+                    data-testid="button-inspection-video"
                   >
-                    <X size={20} />
+                     <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                       <Play size={12} className="fill-red-500 ml-0.5 text-red-500" />
+                     </div>
+                     <span className="font-bold text-[10px] leading-tight uppercase tracking-wide">Inspection<br/>Video</span>
                   </button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px] p-0 bg-black border-none overflow-hidden">
+                  <VisuallyHidden>
+                    <DialogTitle>Device Inspection Video - {phone.name}</DialogTitle>
+                  </VisuallyHidden>
+                  <div className="relative aspect-video bg-black">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${getYouTubeVideoId(phone.inspectionVideo)}?autoplay=1`}
+                      title={`Device Inspection - ${phone.name}`}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                    <button 
+                      onClick={() => setIsVideoOpen(false)}
+                      className="absolute top-4 right-4 p-2 bg-black/70 rounded-full hover:bg-black text-white transition-colors z-10"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           {/* Description & Key Specs Grid (Desktop View) */}
