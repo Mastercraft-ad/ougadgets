@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import { storage } from "./storage";
-import { updateAdminProfileSchema, changePasswordSchema } from "@shared/schema";
+import { updateAdminProfileSchema, changePasswordSchema, insertPhoneSchema, updatePhoneSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -36,6 +36,14 @@ const upload = multer({
   },
 });
 
+// Auth middleware for protected admin routes
+const requireAuth = (req: Request, res: Response, next: Function) => {
+  if (!req.session?.adminId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  next();
+};
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -45,6 +53,49 @@ export async function registerRoutes(
     res.setHeader("Cache-Control", "no-cache");
     next();
   }, express.static(path.join(process.cwd(), "uploads")));
+
+  // Login endpoint
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+
+      const verifiedUser = await storage.verifyAdminPassword(username, password);
+      if (!verifiedUser) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      req.session.adminId = verifiedUser.id;
+      req.session.adminUsername = verifiedUser.username;
+
+      const { password: pwd, ...userWithoutPassword } = verifiedUser;
+      res.json({ message: "Login successful", user: userWithoutPassword });
+    } catch (error) {
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Check auth status
+  app.get("/api/auth/status", (req: Request, res: Response) => {
+    if (req.session?.adminId) {
+      res.json({ authenticated: true, adminId: req.session.adminId });
+    } else {
+      res.json({ authenticated: false });
+    }
+  });
 
   app.get("/api/admin/profile", async (req: Request, res: Response) => {
     try {
@@ -60,7 +111,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/admin/profile", async (req: Request, res: Response) => {
+  app.patch("/api/admin/profile", requireAuth, async (req: Request, res: Response) => {
     try {
       const validationResult = updateAdminProfileSchema.safeParse(req.body);
       if (!validationResult.success) {
@@ -91,7 +142,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/change-password", async (req: Request, res: Response) => {
+  app.post("/api/admin/change-password", requireAuth, async (req: Request, res: Response) => {
     try {
       const validationResult = changePasswordSchema.safeParse(req.body);
       if (!validationResult.success) {
@@ -116,7 +167,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/avatar", upload.single("avatar"), async (req: Request, res: Response) => {
+  app.post("/api/admin/avatar", requireAuth, upload.single("avatar"), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -138,6 +189,71 @@ export async function registerRoutes(
       res.json(userWithoutPassword);
     } catch (error) {
       res.status(500).json({ error: "Failed to upload avatar" });
+    }
+  });
+
+  // Phone API Routes
+  app.get("/api/phones", async (req: Request, res: Response) => {
+    try {
+      const phones = await storage.getAllPhones();
+      res.json(phones);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch phones" });
+    }
+  });
+
+  app.get("/api/phones/:id", async (req: Request, res: Response) => {
+    try {
+      const phone = await storage.getPhone(req.params.id);
+      if (!phone) {
+        return res.status(404).json({ error: "Phone not found" });
+      }
+      res.json(phone);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch phone" });
+    }
+  });
+
+  app.post("/api/phones", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const validationResult = insertPhoneSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ error: validationResult.error.errors });
+      }
+
+      const phone = await storage.createPhone(validationResult.data);
+      res.status(201).json(phone);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create phone" });
+    }
+  });
+
+  app.put("/api/phones/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const validationResult = updatePhoneSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ error: validationResult.error.errors });
+      }
+
+      const phone = await storage.updatePhone(req.params.id, validationResult.data);
+      if (!phone) {
+        return res.status(404).json({ error: "Phone not found" });
+      }
+      res.json(phone);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update phone" });
+    }
+  });
+
+  app.delete("/api/phones/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const success = await storage.deletePhone(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Phone not found" });
+      }
+      res.json({ message: "Phone deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete phone" });
     }
   });
 

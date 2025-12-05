@@ -4,29 +4,42 @@ import { useStore } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Mail, ShoppingBag, AlertCircle, ArrowRight } from "lucide-react";
+import { User, Lock, ShoppingBag, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Login() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const login = useStore((state) => state.login);
   const [, setLocation] = useLocation();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(username, email);
-    if (success) {
-      setLocation("/admin");
-    } else {
+    setIsLoading(true);
+    setError(false);
+    
+    try {
+      const response = await apiRequest('POST', '/api/auth/login', { username, password });
+      if (response.ok) {
+        const data = await response.json();
+        login(username, data.user?.email || 'admin@ougadgets.com');
+        setLocation("/admin");
+      } else {
+        setError(true);
+      }
+    } catch {
       setError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fillDemoCredentials = () => {
     setUsername("admin");
-    setEmail("admin@ougadgets.com");
+    setPassword("admin123");
     setError(false);
   };
 
@@ -64,19 +77,19 @@ export default function Login() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Email</label>
+                  <label className="text-sm font-medium text-foreground">Password</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                      type="email" 
-                      placeholder="Enter your email" 
+                      type="password" 
+                      placeholder="Enter your password" 
                       className="pl-10 h-12 bg-slate-50/50 border-slate-200 focus:bg-white transition-colors" 
-                      value={email}
+                      value={password}
                       onChange={(e) => {
-                        setEmail(e.target.value);
+                        setPassword(e.target.value);
                         setError(false);
                       }}
-                      data-testid="input-email"
+                      data-testid="input-password"
                     />
                   </div>
                 </div>
@@ -89,9 +102,18 @@ export default function Login() {
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full h-12 font-bold text-base gap-2" size="lg" data-testid="button-signin">
-                Sign In
-                <ArrowRight size={18} />
+              <Button type="submit" className="w-full h-12 font-bold text-base gap-2" size="lg" data-testid="button-signin" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight size={18} />
+                  </>
+                )}
               </Button>
             </form>
 
@@ -115,7 +137,7 @@ export default function Login() {
                   <p className="text-xs text-muted-foreground mt-1">
                     <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">admin</span>
                     <span className="mx-2 text-slate-300">|</span>
-                    <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">admin@ougadgets.com</span>
+                    <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">admin123</span>
                   </p>
                 </div>
                 <Button variant="ghost" size="sm" className="text-primary group-hover:bg-primary/10">

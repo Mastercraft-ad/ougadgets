@@ -1,7 +1,59 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Phone schema
+export const phones = pgTable("phones", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  brand: text("brand").notNull(),
+  ram: integer("ram").notNull(),
+  rom: integer("rom").notNull(),
+  color: text("color").notNull(),
+  battery: integer("battery").notNull(),
+  camera: integer("camera").notNull(),
+  frontCamera: integer("front_camera").notNull(),
+  marketPrice: integer("market_price").notNull(),
+  jumiaPrice: integer("jumia_price").notNull(),
+  ouPrice: integer("ou_price").notNull(),
+  description: text("description").notNull(),
+  images: text("images").array().notNull(),
+  addedDate: timestamp("added_date").notNull().defaultNow(),
+  condition: text("condition").notNull(),
+  os: text("os"),
+  sim: text("sim"),
+  inspectionVideo: text("inspection_video"),
+});
+
+export const insertPhoneSchema = createInsertSchema(phones).omit({
+  id: true,
+  addedDate: true,
+});
+
+export const updatePhoneSchema = z.object({
+  name: z.string().optional(),
+  brand: z.string().optional(),
+  ram: z.number().optional(),
+  rom: z.number().optional(),
+  color: z.string().optional(),
+  battery: z.number().optional(),
+  camera: z.number().optional(),
+  frontCamera: z.number().optional(),
+  marketPrice: z.number().optional(),
+  jumiaPrice: z.number().optional(),
+  ouPrice: z.number().optional(),
+  description: z.string().optional(),
+  images: z.array(z.string()).optional(),
+  condition: z.string().optional(),
+  os: z.string().nullable().optional(),
+  sim: z.string().nullable().optional(),
+  inspectionVideo: z.string().nullable().optional(),
+});
+
+export type InsertPhone = z.infer<typeof insertPhoneSchema>;
+export type Phone = typeof phones.$inferSelect;
+export type UpdatePhone = z.infer<typeof updatePhoneSchema>;
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

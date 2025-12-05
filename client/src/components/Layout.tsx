@@ -20,30 +20,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
       <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/">
-            <a className="flex items-center gap-2 group">
-              <div className="bg-primary text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
-                <ShoppingBag size={20} strokeWidth={2.5} />
-              </div>
-              <span className="font-heading font-bold text-xl tracking-tight text-primary">
-                O&U <span className="text-accent-foreground">Gadgets</span>
-              </span>
-            </a>
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="bg-primary text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
+              <ShoppingBag size={20} strokeWidth={2.5} />
+            </div>
+            <span className="font-heading font-bold text-xl tracking-tight text-primary">
+              O&U <span className="text-accent-foreground">Gadgets</span>
+            </span>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <a
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    location === link.href
-                      ? "text-primary font-bold"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {link.label}
-                </a>
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location === link.href
+                    ? "text-primary font-bold"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {link.label}
               </Link>
             ))}
           </nav>
@@ -61,15 +59,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Button>
             </Link>
             
-            <Link href="/compare">
-               <a className="md:hidden relative p-2 text-primary">
-                 <Scale size={20} />
-                 {compareCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-accent text-accent-foreground text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
-                    {compareCount}
-                  </span>
-                )}
-               </a>
+            <Link href="/compare" className="md:hidden relative p-2 text-primary">
+              <Scale size={20} />
+              {compareCount > 0 && (
+                <span className="absolute top-0 right-0 bg-accent text-accent-foreground text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
+                  {compareCount}
+                </span>
+              )}
             </Link>
 
             {/* Mobile Menu */}
@@ -84,13 +80,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <SheetDescription className="hidden">Navigation links</SheetDescription>
                 <div className="flex flex-col gap-6 mt-10">
                   {navLinks.map((link) => (
-                    <Link key={link.href} href={link.href}>
-                      <a 
-                        className="text-lg font-medium py-2 border-b border-border/50"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {link.label}
-                      </a>
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="text-lg font-medium py-2 border-b border-border/50"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {link.label}
                     </Link>
                   ))}
                 </div>
