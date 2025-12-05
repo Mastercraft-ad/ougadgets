@@ -1,8 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import express from "express";
 import { storage } from "./storage";
 import { updateAdminProfileSchema, changePasswordSchema } from "@shared/schema";
-import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -44,7 +44,7 @@ export async function registerRoutes(
   app.use("/uploads", (req, res, next) => {
     res.setHeader("Cache-Control", "no-cache");
     next();
-  }, require("express").static(path.join(process.cwd(), "uploads")));
+  }, express.static(path.join(process.cwd(), "uploads")));
 
   app.get("/api/admin/profile", async (req: Request, res: Response) => {
     try {
@@ -99,17 +99,13 @@ export async function registerRoutes(
       }
 
       const { currentPassword, newPassword } = validationResult.data;
-      const adminUser = await storage.getAdminUserByUsername("admin");
       
-      if (!adminUser) {
-        return res.status(404).json({ error: "Admin user not found" });
-      }
-
-      if (adminUser.password !== currentPassword) {
+      const verifiedUser = await storage.verifyAdminPassword("admin", currentPassword);
+      if (!verifiedUser) {
         return res.status(400).json({ error: "Current password is incorrect" });
       }
 
-      const success = await storage.updateAdminPassword(adminUser.id, newPassword);
+      const success = await storage.updateAdminPassword(verifiedUser.id, newPassword);
       if (!success) {
         return res.status(500).json({ error: "Failed to update password" });
       }

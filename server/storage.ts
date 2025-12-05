@@ -6,6 +6,7 @@ import {
   type UpdateAdminProfile 
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -18,21 +19,30 @@ export interface IStorage {
   createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
   updateAdminUser(id: string, updates: UpdateAdminProfile): Promise<AdminUser | undefined>;
   updateAdminPassword(id: string, newPassword: string): Promise<boolean>;
+  verifyAdminPassword(username: string, password: string): Promise<AdminUser | null>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private adminUsers: Map<string, AdminUser>;
+  private initialized: boolean = false;
 
   constructor() {
     this.users = new Map();
     this.adminUsers = new Map();
+    this.initializeDefaultAdmin();
+  }
+
+  private async initializeDefaultAdmin() {
+    if (this.initialized) return;
+    this.initialized = true;
     
+    const hashedPassword = await bcrypt.hash('admin123', 10);
     const defaultAdmin: AdminUser = {
       id: 'admin-001',
       username: 'admin',
       email: 'admin@ougadgets.com',
-      password: 'admin123',
+      password: hashedPassword,
       name: 'Admin User',
       role: 'admin',
       avatar: 'https://github.com/shadcn.png',
@@ -78,9 +88,11 @@ export class MemStorage implements IStorage {
 
   async createAdminUser(insertUser: InsertAdminUser): Promise<AdminUser> {
     const id = randomUUID();
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
     const adminUser: AdminUser = { 
       ...insertUser, 
       id,
+      password: hashedPassword,
       joinedDate: new Date(),
       lastActive: new Date(),
     };
@@ -105,10 +117,19 @@ export class MemStorage implements IStorage {
     const adminUser = this.adminUsers.get(id);
     if (!adminUser) return false;
     
-    adminUser.password = newPassword;
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    adminUser.password = hashedPassword;
     adminUser.lastActive = new Date();
     this.adminUsers.set(id, adminUser);
     return true;
+  }
+
+  async verifyAdminPassword(username: string, password: string): Promise<AdminUser | null> {
+    const adminUser = await this.getAdminUserByUsername(username);
+    if (!adminUser) return null;
+    
+    const isValid = await bcrypt.compare(password, adminUser.password);
+    return isValid ? adminUser : null;
   }
 }
 
