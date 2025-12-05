@@ -2,13 +2,19 @@ import { Layout } from "@/components/Layout";
 import { PhoneCard } from "@/components/PhoneCard";
 import { FilterBar, FilterState } from "@/components/FilterBar";
 import { useStore } from "@/store/useStore";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export default function Catalog() {
   const phones = useStore((state) => state.phones);
-  const [filteredPhones, setFilteredPhones] = useState(phones);
+  const [filters, setFilters] = useState<FilterState>({
+    search: "",
+    brand: "all",
+    minRam: 0,
+    maxPrice: 1000000,
+    sortBy: "newest",
+  });
 
-  const handleFilterChange = (filters: FilterState) => {
+  const filteredPhones = useMemo(() => {
     let result = [...phones];
 
     // Search
@@ -42,8 +48,12 @@ export default function Catalog() {
       result.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime());
     }
 
-    setFilteredPhones(result);
-  };
+    return result;
+  }, [phones, filters]);
+
+  const handleFilterChange = useCallback((newFilters: FilterState) => {
+    setFilters(newFilters);
+  }, []);
 
   return (
     <Layout>
