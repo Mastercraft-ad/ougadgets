@@ -7,9 +7,11 @@ import {
   type Phone,
   type InsertPhone,
   type UpdatePhone,
+  type Setting,
   users,
   adminUsers,
-  phones
+  phones,
+  settings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
@@ -33,6 +35,10 @@ export interface IStorage {
   createPhone(phone: InsertPhone): Promise<Phone>;
   updatePhone(id: string, updates: UpdatePhone): Promise<Phone | undefined>;
   deletePhone(id: string): Promise<boolean>;
+  
+  getAllSettings(): Promise<Setting[]>;
+  getSetting(key: string): Promise<Setting | undefined>;
+  upsertSetting(key: string, value: string): Promise<Setting>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -128,6 +134,30 @@ export class DatabaseStorage implements IStorage {
   async deletePhone(id: string): Promise<boolean> {
     const result = await db.delete(phones).where(eq(phones.id, id)).returning();
     return result.length > 0;
+  }
+
+  async getAllSettings(): Promise<Setting[]> {
+    return db.select().from(settings);
+  }
+
+  async getSetting(key: string): Promise<Setting | undefined> {
+    const [setting] = await db.select().from(settings).where(eq(settings.key, key));
+    return setting || undefined;
+  }
+
+  async upsertSetting(key: string, value: string): Promise<Setting> {
+    const existing = await this.getSetting(key);
+    if (existing) {
+      const [updated] = await db
+        .update(settings)
+        .set({ value })
+        .where(eq(settings.key, key))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(settings).values({ key, value }).returning();
+      return created;
+    }
   }
 }
 

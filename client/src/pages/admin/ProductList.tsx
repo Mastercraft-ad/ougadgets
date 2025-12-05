@@ -108,7 +108,7 @@ export default function AdminProducts() {
               <TableHead>Name</TableHead>
               <TableHead className="hidden md:table-cell">Brand</TableHead>
               <TableHead className="hidden sm:table-cell">Price (O&U)</TableHead>
-              <TableHead className="hidden md:table-cell">Stock</TableHead>
+              <TableHead className="hidden md:table-cell">Condition</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -142,8 +142,12 @@ export default function AdminProducts() {
                   <TableCell className="hidden md:table-cell">{phone.brand}</TableCell>
                   <TableCell className="hidden sm:table-cell">₦{phone.ouPrice.toLocaleString()}</TableCell>
                   <TableCell className="hidden md:table-cell">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      In Stock
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      phone.condition === 'New' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                    }`}>
+                      {phone.condition}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">

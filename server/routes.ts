@@ -97,9 +97,9 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/admin/profile", async (req: Request, res: Response) => {
+  app.get("/api/admin/profile", requireAuth, async (req: Request, res: Response) => {
     try {
-      const adminUser = await storage.getAdminUserByUsername("admin");
+      const adminUser = await storage.getAdminUser(req.session.adminId!);
       if (!adminUser) {
         return res.status(404).json({ error: "Admin user not found" });
       }
@@ -118,7 +118,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: validationResult.error.errors });
       }
 
-      const adminUser = await storage.getAdminUserByUsername("admin");
+      const adminUser = await storage.getAdminUser(req.session.adminId!);
       if (!adminUser) {
         return res.status(404).json({ error: "Admin user not found" });
       }
@@ -151,7 +151,12 @@ export async function registerRoutes(
 
       const { currentPassword, newPassword } = validationResult.data;
       
-      const verifiedUser = await storage.verifyAdminPassword("admin", currentPassword);
+      const adminUser = await storage.getAdminUser(req.session.adminId!);
+      if (!adminUser) {
+        return res.status(404).json({ error: "Admin user not found" });
+      }
+      
+      const verifiedUser = await storage.verifyAdminPassword(adminUser.username, currentPassword);
       if (!verifiedUser) {
         return res.status(400).json({ error: "Current password is incorrect" });
       }
@@ -173,7 +178,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const adminUser = await storage.getAdminUserByUsername("admin");
+      const adminUser = await storage.getAdminUser(req.session.adminId!);
       if (!adminUser) {
         return res.status(404).json({ error: "Admin user not found" });
       }
@@ -254,6 +259,33 @@ export async function registerRoutes(
       res.json({ message: "Phone deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete phone" });
+    }
+  });
+
+  // Settings API Routes
+  app.get("/api/settings", async (req: Request, res: Response) => {
+    try {
+      const allSettings = await storage.getAllSettings();
+      const settingsObj: Record<string, string> = {};
+      allSettings.forEach(s => { settingsObj[s.key] = s.value; });
+      res.json(settingsObj);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/settings", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const updates = req.body as Record<string, string>;
+      for (const [key, value] of Object.entries(updates)) {
+        await storage.upsertSetting(key, value);
+      }
+      const allSettings = await storage.getAllSettings();
+      const settingsObj: Record<string, string> = {};
+      allSettings.forEach(s => { settingsObj[s.key] = s.value; });
+      res.json(settingsObj);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update settings" });
     }
   });
 
