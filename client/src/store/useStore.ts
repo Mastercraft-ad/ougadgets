@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import defaultPhones from '@/data/phones.json';
 
 export interface AdminUser {
   id: string;
@@ -30,61 +29,33 @@ export interface Phone {
   images: string[];
   addedDate: string;
   condition: string;
-  os?: string;
-  sim?: string;
-  inspectionVideo?: string;
+  os?: string | null;
+  sim?: string | null;
+  inspectionVideo?: string | null;
 }
 
 interface StoreState {
-  // Data
-  phones: Phone[];
   compareList: Phone[];
   
-  // Auth (Mock)
   isAuthenticated: boolean;
   adminUser: AdminUser | null;
-  login: (username: string, email: string) => boolean;
+  setAuth: (isAuthenticated: boolean, adminUser: AdminUser | null) => void;
   logout: () => void;
   updateAdminProfile: (updates: Partial<AdminUser>) => void;
 
-  // Actions
   addToCompare: (phone: Phone) => void;
   removeFromCompare: (phoneId: string) => void;
   clearCompare: () => void;
-  
-  setPhones: (phones: Phone[]) => void;
-  addPhones: (newPhones: Phone[]) => void;
-  updatePhone: (updatedPhone: Phone) => void;
-  deletePhone: (phoneId: string) => void;
-  resetPhones: () => void;
 }
 
 export const useStore = create<StoreState>()(
   persist(
     (set) => ({
-      phones: defaultPhones,
       compareList: [],
       isAuthenticated: false,
       adminUser: null,
 
-      login: (username, email) => {
-        // Mock credential check
-        if (username === 'admin' && email === 'admin@ougadgets.com') {
-          const adminUser: AdminUser = {
-            id: 'admin-001',
-            name: 'Admin User',
-            email: 'admin@ougadgets.com',
-            role: 'admin',
-            avatar: 'https://github.com/shadcn.png',
-            phone: '+234 800 000 0000',
-            joinedDate: '2024-01-15',
-            lastActive: new Date().toISOString(),
-          };
-          set({ isAuthenticated: true, adminUser });
-          return true;
-        }
-        return false;
-      },
+      setAuth: (isAuthenticated, adminUser) => set({ isAuthenticated, adminUser }),
       logout: () => set({ isAuthenticated: false, adminUser: null }),
       
       updateAdminProfile: (updates) => set((state) => ({
@@ -102,19 +73,6 @@ export const useStore = create<StoreState>()(
           compareList: state.compareList.filter((p) => p.id !== phoneId),
         })),
       clearCompare: () => set({ compareList: [] }),
-      
-      setPhones: (phones) => set({ phones }),
-      addPhones: (newPhones) => set((state) => ({ phones: [...newPhones, ...state.phones] })), // Add to top
-      
-      updatePhone: (updatedPhone) => set((state) => ({
-        phones: state.phones.map((p) => p.id === updatedPhone.id ? updatedPhone : p)
-      })),
-
-      deletePhone: (phoneId) => set((state) => ({
-        phones: state.phones.filter((p) => p.id !== phoneId)
-      })),
-
-      resetPhones: () => set({ phones: defaultPhones }),
     }),
     {
       name: 'ou-gadgets-storage',

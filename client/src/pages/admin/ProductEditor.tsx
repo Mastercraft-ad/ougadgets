@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useStore, Phone } from "@/store/useStore";
+import type { Phone } from "@/store/useStore";
 import { useRoute, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,8 +26,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState, useRef } from "react";
-import { ArrowLeft, Save, Image as ImageIcon, Smartphone, DollarSign, Layers, Upload, Youtube } from "lucide-react";
+import { ArrowLeft, Save, Image as ImageIcon, Smartphone, DollarSign, Layers, Upload, Youtube, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const phoneSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -54,12 +56,14 @@ export default function ProductEditor() {
   const [, setLocation] = useLocation();
   const isEditMode = !!params?.id;
   
-  const { phones, addPhones, updatePhone } = useStore();
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const phoneToEdit = isEditMode ? phones.find(p => p.id === params.id) : null;
+  const { data: phoneToEdit, isLoading: isLoadingPhone } = useQuery<Phone>({
+    queryKey: ['/api/phones', params?.id],
+    enabled: isEditMode && !!params?.id,
+  });
 
   const form = useForm<z.infer<typeof phoneSchema>>({
     resolver: zodResolver(phoneSchema),
@@ -99,30 +103,74 @@ export default function ProductEditor() {
       form.reset({
         ...phoneToEdit,
         images: phoneToEdit.images.join("|"),
+        os: phoneToEdit.os || "Android",
+        sim: phoneToEdit.sim || "Dual SIM (Nano-SIM)",
+        inspectionVideo: phoneToEdit.inspectionVideo || "",
       });
     }
   }, [isEditMode, phoneToEdit, form]);
 
-  function onSubmit(values: z.infer<typeof phoneSchema>) {
-    const imageArray = values.images.split("|").map(s => s.trim()).filter(s => s !== "");
-    
-    const phoneData: Phone = {
-      ...values,
-      id: isEditMode && phoneToEdit ? phoneToEdit.id : `p-${Date.now()}`,
-      images: imageArray,
-      addedDate: isEditMode && phoneToEdit ? phoneToEdit.addedDate : new Date().toISOString(),
-    };
+  const createMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof phoneSchema>) => {
+      const imageArray = data.images.split("|").map(s => s.trim()).filter(s => s !== "");
+      const response = await apiRequest('POST', '/api/phones', {
+        ...data,
+        images: imageArray,
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create phone');
+      }
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/phones'] });
+      toast({ title: "Product Created", description: `${variables.name} has been added to catalog.` });
+      setLocation("/admin/products");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Create Failed",
+        description: error.message || "Failed to create the product.",
+        variant: "destructive"
+      });
+    },
+  });
 
+  const updateMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof phoneSchema>) => {
+      const imageArray = data.images.split("|").map(s => s.trim()).filter(s => s !== "");
+      const response = await apiRequest('PUT', `/api/phones/${params?.id}`, {
+        ...data,
+        images: imageArray,
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update phone');
+      }
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/phones'] });
+      toast({ title: "Product Updated", description: `${variables.name} has been updated.` });
+      setLocation("/admin/products");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update the product.",
+        variant: "destructive"
+      });
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof phoneSchema>) {
     if (isEditMode) {
-      updatePhone(phoneData);
-      toast({ title: "Product Updated", description: `${values.name} has been updated.` });
+      updateMutation.mutate(values);
     } else {
-      addPhones([phoneData]);
-      toast({ title: "Product Created", description: `${values.name} has been added to catalog.` });
+      createMutation.mutate(values);
     }
-    
-    setLocation("/admin/products");
   }
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -157,12 +205,21 @@ export default function ProductEditor() {
           </div>
         </div>
         <div className="flex gap-2">
-           <Button variant="outline" onClick={() => setLocation("/admin/products")}>Discard</Button>
-           <Button onClick={form.handleSubmit(onSubmit)} className="gap-2">
-             <Save size={16} /> Save Product
+           <Button variant="outline" onClick={() => setLocation("/admin/products")} disabled={isSaving}>Discard</Button>
+           <Button onClick={form.handleSubmit(onSubmit)} className="gap-2" disabled={isSaving}>
+             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+             {isSaving ? "Saving..." : "Save Product"}
            </Button>
         </div>
       </div>
+
+      {isEditMode && isLoadingPhone && (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {(!isEditMode || (isEditMode && !isLoadingPhone)) && (
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -486,6 +543,7 @@ export default function ProductEditor() {
           </div>
         </form>
       </Form>
+      )}
     </AdminLayout>
   );
 }

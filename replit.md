@@ -54,11 +54,21 @@ Preferred communication style: Simple, everyday language.
 
 **API Design**
 - RESTful API endpoints under `/api` prefix
+- Phone CRUD endpoints:
+  - `GET /api/phones` - List all phones
+  - `GET /api/phones/:id` - Get single phone by ID
+  - `POST /api/phones` - Create new phone (protected)
+  - `PUT /api/phones/:id` - Update phone (protected)
+  - `DELETE /api/phones/:id` - Delete phone (protected)
 - Admin profile management endpoints:
   - `GET /api/admin/profile` - Retrieve admin profile (excludes password)
   - `PATCH /api/admin/profile` - Update profile (name, email, phone)
   - `POST /api/admin/change-password` - Change password with verification
   - `POST /api/admin/avatar` - Upload avatar image (max 5MB, jpeg/png/gif/webp)
+- Authentication endpoints:
+  - `POST /api/auth/login` - Admin login
+  - `POST /api/auth/logout` - Admin logout
+  - `GET /api/auth/status` - Check authentication status
 - File upload handling for avatar images via Multer
 - Static file serving for uploaded content at `/uploads`
 
@@ -79,8 +89,9 @@ Preferred communication style: Simple, everyday language.
 
 **Current Implementation**
 - **In-memory storage** (MemStorage) for development and prototyping
-- Client-side JSON file (`/client/src/data/phones.json`) as the product database
-- Zustand with localStorage persistence for client state
+- All phone data served via backend API endpoints (no client-side mock data)
+- TanStack Query (React Query) for all data fetching with proper loading states
+- Zustand for authentication state management only
 - File system storage for uploaded avatars in `/uploads/avatars`
 
 **Database Schema (Configured but Not Active)**

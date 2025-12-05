@@ -1,11 +1,15 @@
 import { Layout } from "@/components/Layout";
 import { PhoneCard } from "@/components/PhoneCard";
 import { FilterBar, FilterState } from "@/components/FilterBar";
-import { useStore } from "@/store/useStore";
 import { useState, useMemo, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import type { Phone } from "@/store/useStore";
 
 export default function Catalog() {
-  const phones = useStore((state) => state.phones);
+  const { data: phones = [], isLoading } = useQuery<Phone[]>({
+    queryKey: ['/api/phones'],
+  });
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     brand: "all",
@@ -64,7 +68,11 @@ export default function Catalog() {
 
       <FilterBar phones={phones} onFilterChange={handleFilterChange} />
 
-      {filteredPhones.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : filteredPhones.length === 0 ? (
         <div className="text-center py-20">
           <h3 className="text-xl font-bold text-muted-foreground">No phones found matching your criteria.</h3>
           <p className="text-muted-foreground mt-2">Try adjusting your filters.</p>

@@ -41,7 +41,11 @@ interface AdminProfile {
 }
 
 export default function AdminProfile() {
-  const { phones, updateAdminProfile: updateStoreProfile } = useStore();
+  const { updateAdminProfile: updateStoreProfile } = useStore();
+  
+  const { data: phones = [] } = useQuery<{ id: string }[]>({
+    queryKey: ['/api/phones'],
+  });
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   

@@ -1,10 +1,13 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useStore } from "@/store/useStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smartphone, DollarSign, TrendingUp, Activity } from "lucide-react";
+import { Smartphone, DollarSign, TrendingUp, Activity, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Phone } from "@/store/useStore";
 
 export default function AdminDashboard() {
-  const phones = useStore((state) => state.phones);
+  const { data: phones = [], isLoading } = useQuery<Phone[]>({
+    queryKey: ['/api/phones'],
+  });
 
   const totalInventoryValue = phones.reduce((acc, curr) => acc + curr.ouPrice, 0);
   const totalPotentialProfit = phones.reduce((acc, curr) => acc + (curr.marketPrice - curr.ouPrice), 0); // Just a metric for fun
@@ -44,6 +47,16 @@ export default function AdminDashboard() {
       color: "text-amber-600 bg-amber-100",
     },
   ];
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

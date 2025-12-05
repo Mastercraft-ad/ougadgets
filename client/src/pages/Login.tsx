@@ -13,7 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const login = useStore((state) => state.login);
+  const setAuth = useStore((state) => state.setAuth);
   const [, setLocation] = useLocation();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -25,7 +25,17 @@ export default function Login() {
       const response = await apiRequest('POST', '/api/auth/login', { username, password });
       if (response.ok) {
         const data = await response.json();
-        login(username, data.user?.email || 'admin@ougadgets.com');
+        const user = data.user;
+        setAuth(true, {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role as 'admin' | 'manager' | 'staff',
+          avatar: user.avatar || undefined,
+          phone: user.phone || undefined,
+          joinedDate: user.joinedDate,
+          lastActive: user.lastActive,
+        });
         setLocation("/admin");
       } else {
         setError(true);
@@ -35,12 +45,6 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fillDemoCredentials = () => {
-    setUsername("admin");
-    setPassword("admin123");
-    setError(false);
   };
 
   return (
@@ -98,7 +102,7 @@ export default function Login() {
               {error && (
                 <Alert variant="destructive" className="py-3 border-destructive/20 bg-destructive/5">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>Invalid credentials. Use the demo account below.</AlertDescription>
+                  <AlertDescription>Invalid username or password. Please try again.</AlertDescription>
                 </Alert>
               )}
 
@@ -116,35 +120,6 @@ export default function Login() {
                 )}
               </Button>
             </form>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-muted-foreground">Demo Access</span>
-              </div>
-            </div>
-
-            <div 
-              onClick={fillDemoCredentials}
-              className="p-4 rounded-xl bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10 cursor-pointer hover:border-primary/30 transition-all group"
-              data-testid="button-demo-fill"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Demo Account</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">admin</span>
-                    <span className="mx-2 text-slate-300">|</span>
-                    <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">admin123</span>
-                  </p>
-                </div>
-                <Button variant="ghost" size="sm" className="text-primary group-hover:bg-primary/10">
-                  Use
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

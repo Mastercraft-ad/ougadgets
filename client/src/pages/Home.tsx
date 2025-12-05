@@ -1,13 +1,16 @@
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { PhoneCard } from "@/components/PhoneCard";
-import { useStore } from "@/store/useStore";
 import { Link } from "wouter";
-import { ArrowRight, ShieldCheck, Truck, Star } from "lucide-react";
+import { ArrowRight, ShieldCheck, Truck, Star, Loader2 } from "lucide-react";
 import heroImage from "@assets/generated_images/hero_banner_of_modern_smartphones_on_a_dark_background.png";
+import { useQuery } from "@tanstack/react-query";
+import type { Phone } from "@/store/useStore";
 
 export default function Home() {
-  const phones = useStore((state) => state.phones);
+  const { data: phones = [], isLoading } = useQuery<Phone[]>({
+    queryKey: ['/api/phones'],
+  });
   const featuredPhones = phones.slice(0, 4);
 
   return (

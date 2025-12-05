@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useStore, Phone } from "@/store/useStore";
+import type { Phone } from "@/store/useStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,10 +11,12 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Plus, MoreHorizontal, Search, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, MoreHorizontal, Search, Edit, Trash2, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +29,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function AdminProducts() {
-  const phones = useStore((state) => state.phones);
-  const deletePhone = useStore((state) => state.deletePhone);
+  const { data: phones = [], isLoading } = useQuery<Phone[]>({
+    queryKey: ['/api/phones'],
+  });
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -39,15 +42,35 @@ export default function AdminProducts() {
     p.brand.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = () => {
-    if (deleteId) {
-      deletePhone(deleteId);
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('DELETE', `/api/phones/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to delete phone');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/phones'] });
       toast({
         title: "Phone Deleted",
         description: "The product has been removed from the catalog.",
         variant: "destructive"
       });
       setDeleteId(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete the product.",
+        variant: "destructive"
+      });
+    },
+  });
+
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate(deleteId);
     }
   };
 
@@ -90,7 +113,13 @@ export default function AdminProducts() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredPhones.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                </TableCell>
+              </TableRow>
+            ) : filteredPhones.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                   No products found.
