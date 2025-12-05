@@ -3,7 +3,6 @@ import { useStore } from "@/store/useStore";
 import { 
   LayoutDashboard, 
   Smartphone, 
-  Upload, 
   LogOut, 
   ShoppingBag, 
   Settings,

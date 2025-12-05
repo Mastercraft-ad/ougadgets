@@ -66,13 +66,6 @@ export default function AdminSettings() {
               </div>
               <Switch defaultChecked />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>WhatsApp Integration</Label>
-                <p className="text-xs text-muted-foreground">Allow direct chat from product page</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
           </CardContent>
         </Card>
 

@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageCircle, Phone as PhoneIcon, ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -105,34 +105,6 @@ export function PhoneCard({ phone }: PhoneCardProps) {
                Details <ArrowRight className="ml-1 w-3 h-3" />
              </Button>
            </Link>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 w-full">
-           <Button 
-             variant="outline" 
-             size="sm" 
-             className="text-xs border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
-             asChild
-           >
-             <a 
-               href={`https://wa.me/2348000000000?text=${encodeURIComponent(`Hi, I'm interested in the ${phone.name} (${formatCurrency(phone.ouPrice)})`)}`}
-               target="_blank"
-               rel="noopener noreferrer"
-               data-testid={`button-whatsapp-${phone.id}`}
-             >
-               <MessageCircle className="mr-1 h-3 w-3" /> WhatsApp
-             </a>
-           </Button>
-           <Button 
-             variant="outline" 
-             size="sm" 
-             className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
-             asChild
-           >
-             <a href="tel:+2348000000000" data-testid={`button-call-${phone.id}`}>
-               <PhoneIcon className="mr-1 h-3 w-3" /> Call
-             </a>
-           </Button>
         </div>
 
         <div className="w-full">
