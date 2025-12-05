@@ -16,6 +16,7 @@ import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminProducts from "@/pages/admin/ProductList";
 import ProductEditor from "@/pages/admin/ProductEditor";
 import AdminSettings from "@/pages/admin/Settings";
+import AdminProfile from "@/pages/admin/Profile";
 
 // Protected Route Component
 function ProtectedRoute({ component: Component }: { component: React.ComponentType<any> }) {
@@ -53,6 +54,9 @@ function Router() {
       </Route>
       <Route path="/admin/settings">
         <ProtectedRoute component={AdminSettings} />
+      </Route>
+      <Route path="/admin/profile">
+        <ProtectedRoute component={AdminProfile} />
       </Route>
       
       <Route component={NotFound} />

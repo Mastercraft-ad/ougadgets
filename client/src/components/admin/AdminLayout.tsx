@@ -9,7 +9,8 @@ import {
   Menu,
   X,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -29,6 +30,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "All Products", icon: Smartphone },
+    { href: "/admin/profile", label: "My Profile", icon: User },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
@@ -119,16 +121,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
         {/* User Profile Footer */}
         <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-sm">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <Avatar className="h-10 w-10 border-2 border-accent">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback className="bg-accent text-accent-foreground font-bold">AD</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">Admin User</p>
-              <p className="text-xs text-primary-foreground/50 truncate">admin@ougadgets.com</p>
-            </div>
-          </div>
+          <Link href="/admin/profile">
+            <a className="flex items-center gap-3 mb-4 px-2 py-2 -mx-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer" data-testid="link-admin-profile">
+              <Avatar className="h-10 w-10 border-2 border-accent">
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback className="bg-accent text-accent-foreground font-bold">AD</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white truncate">Admin User</p>
+                <p className="text-xs text-primary-foreground/50 truncate">admin@ougadgets.com</p>
+              </div>
+            </a>
+          </Link>
           <Button 
             variant="ghost" 
             className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-colors"

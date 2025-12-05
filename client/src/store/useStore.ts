@@ -2,6 +2,17 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import defaultPhones from '@/data/phones.json';
 
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'manager' | 'staff';
+  avatar?: string;
+  phone?: string;
+  joinedDate: string;
+  lastActive: string;
+}
+
 export interface Phone {
   id: string;
   name: string;
@@ -31,8 +42,10 @@ interface StoreState {
   
   // Auth (Mock)
   isAuthenticated: boolean;
+  adminUser: AdminUser | null;
   login: (username: string, email: string) => boolean;
   logout: () => void;
+  updateAdminProfile: (updates: Partial<AdminUser>) => void;
 
   // Actions
   addToCompare: (phone: Phone) => void;
@@ -52,16 +65,31 @@ export const useStore = create<StoreState>()(
       phones: defaultPhones,
       compareList: [],
       isAuthenticated: false,
+      adminUser: null,
 
       login: (username, email) => {
         // Mock credential check
         if (username === 'admin' && email === 'admin@ougadgets.com') {
-          set({ isAuthenticated: true });
+          const adminUser: AdminUser = {
+            id: 'admin-001',
+            name: 'Admin User',
+            email: 'admin@ougadgets.com',
+            role: 'admin',
+            avatar: 'https://github.com/shadcn.png',
+            phone: '+234 800 000 0000',
+            joinedDate: '2024-01-15',
+            lastActive: new Date().toISOString(),
+          };
+          set({ isAuthenticated: true, adminUser });
           return true;
         }
         return false;
       },
-      logout: () => set({ isAuthenticated: false }),
+      logout: () => set({ isAuthenticated: false, adminUser: null }),
+      
+      updateAdminProfile: (updates) => set((state) => ({
+        adminUser: state.adminUser ? { ...state.adminUser, ...updates } : null
+      })),
 
       addToCompare: (phone) =>
         set((state) => {
