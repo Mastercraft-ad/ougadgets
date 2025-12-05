@@ -383,17 +383,17 @@ export default function ProductEditor() {
                   <Separator />
 
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField control={form.control} name="marketPrice" render={({ field }) => (
+                    <FormField control={form.control} name="jumiaPrice" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Market Price</FormLabel>
+                        <FormLabel className="text-xs">Jumia Market</FormLabel>
                         <FormControl><Input type="number" className="bg-white" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
 
-                    <FormField control={form.control} name="jumiaPrice" render={({ field }) => (
+                    <FormField control={form.control} name="marketPrice" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Competitor Price</FormLabel>
+                        <FormLabel className="text-xs">Other Retailers</FormLabel>
                         <FormControl><Input type="number" className="bg-white" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>

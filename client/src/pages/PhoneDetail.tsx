@@ -337,12 +337,12 @@ export default function PhoneDetail() {
             <div className="bg-slate-50 rounded-xl border p-4 space-y-3">
                <h4 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-2">Market Comparison</h4>
                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Market Average</span>
-                  <span className="font-medium line-through">{formatCurrency(phone.marketPrice)}</span>
+                  <span className="text-muted-foreground">Jumia Market</span>
+                  <span className="font-medium line-through">{formatCurrency(phone.jumiaPrice)}</span>
                </div>
                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Major Retailers</span>
-                  <span className="font-medium line-through">{formatCurrency(phone.jumiaPrice)}</span>
+                  <span className="text-muted-foreground">Other Retailers</span>
+                  <span className="font-medium line-through">{formatCurrency(phone.marketPrice)}</span>
                </div>
                <div className="w-full h-px bg-border/50 my-1"></div>
                <div className="flex justify-between items-center text-sm">
