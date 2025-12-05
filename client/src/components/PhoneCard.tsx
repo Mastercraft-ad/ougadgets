@@ -107,6 +107,34 @@ export function PhoneCard({ phone }: PhoneCardProps) {
            </Link>
         </div>
 
+        <div className="grid grid-cols-2 gap-2 w-full">
+           <Button 
+             variant="outline" 
+             size="sm" 
+             className="text-xs border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+             asChild
+           >
+             <a 
+               href={`https://wa.me/2348000000000?text=${encodeURIComponent(`Hi, I'm interested in the ${phone.name} (${formatCurrency(phone.ouPrice)})`)}`}
+               target="_blank"
+               rel="noopener noreferrer"
+               data-testid={`button-whatsapp-${phone.id}`}
+             >
+               <MessageCircle className="mr-1 h-3 w-3" /> WhatsApp
+             </a>
+           </Button>
+           <Button 
+             variant="outline" 
+             size="sm" 
+             className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+             asChild
+           >
+             <a href="tel:+2348000000000" data-testid={`button-call-${phone.id}`}>
+               <PhoneIcon className="mr-1 h-3 w-3" /> Call
+             </a>
+           </Button>
+        </div>
+
         <div className="w-full">
            <Button className="w-full bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all" asChild>
              <Link href={`/phone/${phone.id}`}>
