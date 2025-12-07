@@ -1,0 +1,130 @@
+Project name: O&U Gadgets — React Specs Catalogue
+
+Goal
+----
+Scaffold a small, production-ready React app (create-react-app or Vite) that serves as a gadgets (mobile phones) specifications catalogue. The app must be responsive, fast, and easy to extend. Use Tailwind CSS for styling and React Router for navigation. Provide sample data (JSON) and client-side filtering, search, compare, and contact CTAs (WhatsApp / phone). Include instructions to run and a simple mock admin CSV import flow.
+
+Tech stack & tools
+----
+- React (Vite or Create React App)
+- React Router (v6)
+- Tailwind CSS
+- Zustand or Context API for simple state management (choose one)
+- Local JSON file as mock database (data/dev/phones.json)
+- Optional: React Icons, Headless UI (light)
+- No backend required — keep everything client-side and easily deployable on Replit/Netlify/Vercel
+
+Pages & routes
+----
+- `/` — Home / hero / featured phones
+- `/catalog` — Grid of phones with filters, sort, search, and compare checkbox
+- `/phone/:id` — Phone detail page with full specifications, gallery, price comparison (market vs O&U), CTA buttons (WhatsApp & Call)
+- `/about` — Short about & warranty policy
+- `/admin` — Simple page to upload CSV / paste JSON to bulk add phones (client-side only, persists to localStorage)
+
+Core features (must implement)
+----
+1. **Phone Card (Catalog)** — Photo, name, key specs (RAM, ROM, battery, camera), market price, O&U price, “Compare” checkbox, and CTA buttons:
+   - "Chat on WhatsApp" (deep link using phone number)
+   - "Call to Order" (tel: link)
+   - "View Details"
+
+2. **Search & Filters** — Search by name; filters: RAM, price range, brand, color; sort: price low→high, newest.
+
+3. **Compare View** — When user selects 2–4 phones via checkboxes, show a compare modal/page with specs side-by-side.
+
+4. **Phone Detail Page** — All specs (display in a clean table), image gallery, price comparison (shows Jumia/Gumia price vs market vs O&U), a short inspection video placeholder, and a 24–48hr testing warranty badge.
+
+5. **Performance & UX** — Lazy-load images, use skeleton loaders for lists, responsive layout for mobile-first.
+
+6. **Admin CSV Import (Client-only)** — Allow CSV paste or file upload; parse CSV into JSON and add to localStorage so the catalog updates on reload. Provide an example CSV template.
+
+7. **Sample Data** — Provide a `phones.json` containing 12 sample phone entries with fields:
+   - id, name, brand, ram (GB), rom (GB), color, battery (mAh), camera (main MP), frontCamera (MP), marketPrice, jumiaPrice, ouPrice, description, images (array of URLs or placeholders), addedDate (ISO), condition (New / Used)
+
+8. **Accessibility** — Use semantic HTML, alt tags for images, keyboard-accessible controls.
+
+9. **Testing & Scripts** — Provide `npm`/`yarn` scripts: start, build, preview, lint (if configured).
+
+Design & UI
+----
+- Clean, modern layout (inspired by product marketplaces)
+- Use Tailwind utility classes. Keep brand colors optional but recommend: Dark slate blue (#2C3D50), Golden yellow (#FFD600), White.
+- Use cards with soft shadows, 2xl rounded corners, good spacing (p-4 → p-6).
+- Use a hero on home that highlights transparency: “O&U Price vs Market Price — Save Today.”
+
+Sample `phones.json` (include at least 3 full items)
+----
+[
+  {
+    "id": "p001",
+    "name": "O&U Galaxy A33",
+    "brand": "Samsung",
+    "ram": 6,
+    "rom": 128,
+    "color": "Black",
+    "battery": 5000,
+    "camera": 48,
+    "frontCamera": 13,
+    "marketPrice": 180000,
+    "jumiaPrice": 175000,
+    "ouPrice": 150000,
+    "description": "Reliable midrange phone with strong battery life and good camera.",
+    "images": ["/images/a33-1.jpg","/images/a33-2.jpg"],
+    "addedDate": "2025-11-01T10:00:00Z",
+    "condition": "New"
+  },
+  {
+    "id": "p002",
+    "name": "O&U Note 12",
+    "brand": "Xiaomi",
+    "ram": 8,
+    "rom": 256,
+    "color": "Blue",
+    "battery": 6000,
+    "camera": 108,
+    "frontCamera": 32,
+    "marketPrice": 220000,
+    "jumiaPrice": 215000,
+    "ouPrice": 190000,
+    "description": "High-capacity battery and flagship-level camera at an affordable price.",
+    "images": ["/images/note12-1.jpg"],
+    "addedDate": "2025-10-10T12:00:00Z",
+    "condition": "New"
+  },
+  {
+    "id": "p003",
+    "name": "O&U Pixel Lite",
+    "brand": "Google",
+    "ram": 4,
+    "rom": 64,
+    "color": "White",
+    "battery": 4000,
+    "camera": 12,
+    "frontCamera": 8,
+    "marketPrice": 150000,
+    "jumiaPrice": 148000,
+    "ouPrice": 120000,
+    "description": "Clean Android experience for budget-conscious buyers.",
+    "images": ["/images/pixellite-1.jpg"],
+    "addedDate": "2025-09-05T09:00:00Z",
+    "condition": "Used - Good"
+  }
+]
+
+Extra deliverables & instructions
+----
+- Provide a README with install & run steps:
+  1. `npm install`
+  2. `npm run dev` (or `npm start`)
+  3. Open `http://localhost:3000`
+- Add a short section in README: how to deploy on Replit / Vercel (1-click instructions)
+- Add TODOs as comments for future features: payment integration, real backend, authentication, inventory sync
+
+Developer notes for Replit AI
+----
+- Generate a full React project with the above spec.
+- Keep code modular: components folder (Card, FilterBar, CompareTable, PhoneGallery, AdminImport), pages folder, hooks, utils (csv parser).
+- Ensure the app works purely client-side (no external APIs required).
+- Use localStorage to persist imported phones and compare list.
+- Include unit tests for filter logic (optional but appreciated).
