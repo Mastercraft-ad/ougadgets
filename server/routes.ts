@@ -49,6 +49,10 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
+  app.get("/api/health", (_req: Request, res: Response) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   app.use("/uploads", (req, res, next) => {
     res.setHeader("Cache-Control", "no-cache");
     next();
